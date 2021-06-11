@@ -2,7 +2,7 @@ require 'slack-ruby-bot'
 
 class WikiBot < SlackRubyBot::Bot
   command 'ping' do |client, data, match|
-    client.say(text: 'pong', channel: data.channel)
+    client.say(text: 'pong 🏓', channel: data.channel)
   end
 
   command 'q', /[^q]/ do |client, data, match|
@@ -62,6 +62,43 @@ class WikiBot < SlackRubyBot::Bot
     end
   rescue
     client.say(text: "OH NO! algo salio mal revisa que la estrucutra sea: ", channel: data.channel) 
+  end
+
+  command 'eliminar' do |client, data, match|
+    text = data.text.partition("eliminar").last.strip
+    actual_question = text.strip
+    wiki = Wiki.find_by(question: actual_question)
+    if wiki.nil?
+      texto = "¡Oh, oh! Creo que no he encontrado tu pregunta. 😕"
+      client.say(text: texto, channel: data.channel)
+    else
+      if wiki.destroy!
+        texto = "Pow! 💥 Eliminaste *#{actual_question}*."
+        client.say(text: texto, channel: data.channel)
+      else
+        client.say(text: "Hubo un error, no puedes elminiar la pregunta *#{actual_question}* 😕", channel: data.channel) 
+      end
+    end
+  rescue
+    client.say(text: text_error, channel: data.channel) 
+  end
+
+  command 'help' do |client, data, match|
+    text = "Estos son los temas en los que te puedo ayudar 💯:\n
+    *Hola*\npor si quieres saludarme 💪🦸‍♂️\n
+    *Q {pregunta}*\npuedes hacerme la pregunta que quieras!\n
+    *List*\nSi no sabes que preguntar puedes escribir list y te mostraré las categorías y subcategorías que podrían interesarte!\n
+    *Crear*\n*#PREGUNTA# {pregunta} *\n*#RESPUESTA# {respuesta} *\n*#CATEGORÍA# {categoría} *\n*#SUB-CATEGORÍA# {sub-categoría}*\nCon este comando puedes agregar el contenido que desees!\n
+    *Actualizar*\n*#PREGUNTA-ACTUAL# {pregunta a editar} *\n*#PREGUNTA-NUEVA# {pregunta} *\n*#RESPUESTA-NUEVA# {respuesta} *\n*#CATEGORÍA-NUEVA# {categoría} *\n*#SUB-CATEGORÍA-NUEVA# {sub-categoría}*\nCon este comando puedes actualizar el contenido que desees!\n\n
+    *Eliminar {pregunta}*\nSi una pregunta ya no sirve, eliminala!\n
+    *Ping*\npong 🏓"
+    client.say(text: text, channel: data.channel)
+  end
+
+  Wiki.all.each do |wiki|
+    command wiki.question do |client, data, match|
+      client.say(text: wiki.answer, channel: data.channel)
+    end
   end
 end
 

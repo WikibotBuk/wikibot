@@ -14,6 +14,14 @@ class WikiBot < SlackRubyBot::Bot
     end
   end
 
+  command 'lista' do |client, data, match|
+    text = " 😺🐈 Esta es una lista de preguntas disponibles 🐈😺: \n\n"
+    Wiki.all.group_by(&:kind).each do |kind, wikis|
+      text += "#{kind}:\n #{wikis.map{|wiki| "\t#{wiki.question}\n"}.join("")} \n" 
+    end
+    client.say(text: text, channel: data.channel)
+  end
+
   command 'hola' do |client, data, match|
     client.say(text: '¡Hola! Soy Superwikibot, tu super ayudante en Buk 💪🦸‍♂️. Para comenzar escribe *help*.', channel: data.channel)
   end

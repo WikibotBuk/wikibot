@@ -10,7 +10,7 @@ class WikiBot < SlackRubyBot::Bot
     if wiki
       client.say(text: wiki.answer, channel: data.channel)
     else
-      client.say(text: 'Comando no válido.', channel: data.channel)
+      client.say(text: '¡No existe la pregunta! ¿Deseas crearla?', channel: data.channel)
     end
   end
 

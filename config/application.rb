@@ -1,7 +1,6 @@
 require_relative 'boot'
 
 require 'rails/all'
-require './app/commands/ping.rb'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -20,9 +19,5 @@ module Wikibot
     # the framework and any gems in your application.
 
     config.api_only = true
-    
-    if defined?(::Rails::Server)
-      WikiBot.run
-    end
   end
 end

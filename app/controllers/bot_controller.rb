@@ -5,6 +5,11 @@ class WikiBot < SlackRubyBot::Bot
     client.say(text: 'pong', channel: data.channel)
   end
 
+
+  command 'hola' do |client, data, match|
+    client.say(text: '¡Hola! Soy Superwikibot, tu super ayudante en Buk 💪🦸‍♂️. Para comenzar escribe *help*.', channel: data.channel)
+  end
+
   command 'crear' do |client, data, match|
     text = data.text.partition("crear").last.strip
     question = text[/#{"#PREGUNTA#"}(.*?)#{"#RESPUESTA#"}/m, 1].strip

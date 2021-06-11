@@ -5,3 +5,10 @@ class WikiBot < SlackRubyBot::Bot
     client.say(text: 'pong', channel: data.channel)
   end
 end
+
+class BotController < ApplicationController
+
+  def test
+    ::WikiBot.run
+  end
+end

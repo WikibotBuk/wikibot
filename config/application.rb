@@ -8,6 +8,7 @@ require './app/commands/ping.rb'
 Bundler.require(*Rails.groups)
 
 module Wikibot
+
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 6.0
@@ -19,6 +20,6 @@ module Wikibot
     # the framework and any gems in your application.
 
     config.api_only = true
-    PingBot.run
+    WikiBot.run
   end
 end

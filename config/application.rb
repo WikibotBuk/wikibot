@@ -20,6 +20,9 @@ module Wikibot
     # the framework and any gems in your application.
 
     config.api_only = true
-    WikiBot.run
+    
+    if defined?(::Rails::Server)
+      WikiBot.run
+    end
   end
 end

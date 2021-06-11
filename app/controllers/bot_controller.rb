@@ -2,7 +2,7 @@ require 'slack-ruby-bot'
 
 class WikiBot < SlackRubyBot::Bot
   command 'ping' do |client, data, match|
-    client.say(text: 'pong (jose h)', channel: data.channel)
+    client.say(text: 'pong', channel: data.channel)
   end
 
   command 'crear' do |client, data, match|
@@ -19,6 +19,28 @@ class WikiBot < SlackRubyBot::Bot
     else
       client.say(text: "OH NO! algo salio mal revisa que la estrucutra sea: \n#PREGUNTA# esta es la pregunta\n#RESPUESTA# esta es la respuesta\n#CATEGORÍA# tipo\n#SUB-CATEGORÍA# subtipo", channel: data.channel)
     end
+  rescue
+    client.say(text: "OH NO! algo salio mal revisa que la estrucutra sea: \n#PREGUNTA# esta es la pregunta\n#RESPUESTA# esta es la respuesta\n#CATEGORÍA# tipo\n#SUB-CATEGORÍA# subtipo", channel: data.channel) 
+  end
+
+  command 'editar' do |client, data, match|
+    text = data.text.partition("editar").last.strip
+    actual_question = text[/#{"#PREGUNTA-ACTUAL#"}(.*?)#{"#PREGUNTA-NUEVA#"}/m, 1].strip
+    question = text[/#{"#PREGUNTA-NUEVA#"}(.*?)#{"#RESPUESTA-NUEVA#"}/m, 1].strip
+    answer = text[/#{"#RESPUESTA-NUEVA#"}(.*?)#{"#CATEGORÍA-NUEVA#"}/m, 1].strip
+    kind = text[/#{"#CATEGORÍA-NUEVA#"}(.*?)#{"#SUB-CATEGORÍA-NUEVA#"}/m, 1].strip
+    subtype = text.partition("#SUB-CATEGORÍA-NUEVA#").last.strip
+
+    wiki = Wiki.find_by(question: actual_question)
+    wiki.update(question: question, answer: answer, kind: kind, subtype: subtype)
+    if wiki.save!
+      texto = "Actualizado!!! \nquestion: #{question}\nanswer: #{answer}\nkind: #{kind}\nsubtype: #{subtype}"
+      client.say(text: texto, channel: data.channel)
+    else
+      client.say(text: "OH NO! algo salio mal revisa que la estrucutra sea: ", channel: data.channel)
+    end
+  rescue
+    client.say(text: "OH NO! algo salio mal revisa que la estrucutra sea: ", channel: data.channel) 
   end
 
   Wiki.all.each do |wiki|

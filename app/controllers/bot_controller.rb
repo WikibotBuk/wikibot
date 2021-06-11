@@ -5,9 +5,12 @@ class WikiBot < SlackRubyBot::Bot
     client.say(text: 'pong', channel: data.channel)
   end
 
-  Wiki.all.each do |wiki|
-    command wiki.question do |client, data, match|
+  command 'q', /[^q]/ do |client, data, match|
+    wiki = Wiki.find_by(question: match["expression"].strip)
+    if wiki
       client.say(text: wiki.answer, channel: data.channel)
+    else
+      client.say(text: 'Comando no válido.', channel: data.channel)
     end
   end
 end

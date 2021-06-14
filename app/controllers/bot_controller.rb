@@ -1,6 +1,7 @@
 require 'slack-ruby-bot'
 
 class WikiBot < SlackRubyBot::Bot
+  text_error = "Mmh... no entendí nada. Mejor pregúntale a Camilo 🤫"
   command 'ping' do |client, data, match|
     client.say(text: 'pong 🏓', channel: data.channel)
   end
@@ -15,11 +16,25 @@ class WikiBot < SlackRubyBot::Bot
   end
 
   command 'lista' do |client, data, match|
-    text = " 😺🐈 Esta es una lista de preguntas disponibles 🐈😺: \n\n"
-    Wiki.all.group_by(&:kind).each do |kind, wikis|
-      text += "#{kind}:\n #{wikis.map{|wiki| "\t#{wiki.question}\n"}.join("")} \n" 
+    search_kind = data.text.partition("lista").last.strip
+    if search_kind.present? && !search_kind.blank?
+      find_wikis = Wiki.where(kind: search_kind)
+      if find_wikis.any?
+        text = " 😺🐈 Esta es una lista de preguntas disponibles para la categorías *#{search_kind}* 🐈😺: \n\n"
+        find_wikis.group_by(&:kind).each do |kind, wikis|
+          text += "#{kind}:\n #{wikis.map{|wiki| "\t#{wiki.question}\n"}.join("")} \n" 
+        end
+        client.say(text: text, channel: data.channel)
+      else
+
+      end
+    else
+      text = " 😺🐈 Esta es una lista de preguntas disponibles 🐈😺: \n\n"
+      Wiki.all.group_by(&:kind).each do |kind, wikis|
+        text += "#{kind}:\n #{wikis.map{|wiki| "\t#{wiki.question}\n"}.join("")} \n" 
+      end
+      client.say(text: text, channel: data.channel)
     end
-    client.say(text: text, channel: data.channel)
   end
 
   command 'hola' do |client, data, match|
@@ -35,7 +50,7 @@ class WikiBot < SlackRubyBot::Bot
 
     new_wiki = Wiki.create(question: question, answer: answer, kind: kind, subtype: subtype)
     if new_wiki.save!
-      texto = "Creado!!! question: #{question}, answer: #{answer}, kind: #{kind}, subtype: #{subtype}"
+      texto = "Bravo! 🚀 Has creado tu contenido!"
       client.say(text: texto, channel: data.channel)
     else
       client.say(text: "OH NO! algo salio mal revisa que la estrucutra sea: \n#PREGUNTA# esta es la pregunta\n#RESPUESTA# esta es la respuesta\n#CATEGORÍA# tipo\n#SUB-CATEGORÍA# subtipo", channel: data.channel)
@@ -55,13 +70,13 @@ class WikiBot < SlackRubyBot::Bot
     wiki = Wiki.find_by(question: actual_question)
     wiki.update(question: question, answer: answer, kind: kind, subtype: subtype)
     if wiki.save!
-      texto = "Actualizado!!! \nquestion: #{question}\nanswer: #{answer}\nkind: #{kind}\nsubtype: #{subtype}"
+      texto = "Eres un verdadero héroe! 🤩  Se editó: #{actual_question}\n"
       client.say(text: texto, channel: data.channel)
     else
-      client.say(text: "OH NO! algo salio mal revisa que la estrucutra sea: ", channel: data.channel)
+      client.say(text: "OH NO! algo salio mal revisa que la estrucutra sea: \n#PREGUNTA-ACTUAL# {pregunta a editar}\n#PREGUNTA-NUEVA# {pregunta}\n#RESPUESTA-NUEVA# {respuesta}\n#CATEGORÍA-NUEVA# {categoría}\n#SUB-CATEGORÍA-NUEVA# {sub-categoría}\n", channel: data.channel)
     end
   rescue
-    client.say(text: "OH NO! algo salio mal revisa que la estrucutra sea: ", channel: data.channel) 
+    client.say(text: text_error, channel: data.channel) 
   end
 
   command 'eliminar' do |client, data, match|
@@ -87,9 +102,9 @@ class WikiBot < SlackRubyBot::Bot
     text = "Estos son los temas en los que te puedo ayudar 💯:\n
     *Hola*\npor si quieres saludarme 💪🦸‍♂️\n
     *Q {pregunta}*\npuedes hacerme la pregunta que quieras!\n
-    *List*\nSi no sabes que preguntar puedes escribir list y te mostraré las categorías y subcategorías que podrían interesarte!\n
+    *Lista*\nSi no sabes que preguntar puedes escribir lista y te mostraré las categorías y subcategorías que podrían interesarte!\n
     *Crear*\n*#PREGUNTA# {pregunta} *\n*#RESPUESTA# {respuesta} *\n*#CATEGORÍA# {categoría} *\n*#SUB-CATEGORÍA# {sub-categoría}*\nCon este comando puedes agregar el contenido que desees!\n
-    *Actualizar*\n*#PREGUNTA-ACTUAL# {pregunta a editar} *\n*#PREGUNTA-NUEVA# {pregunta} *\n*#RESPUESTA-NUEVA# {respuesta} *\n*#CATEGORÍA-NUEVA# {categoría} *\n*#SUB-CATEGORÍA-NUEVA# {sub-categoría}*\nCon este comando puedes actualizar el contenido que desees!\n\n
+    *Editar*\n*#PREGUNTA-ACTUAL# {pregunta a editar} *\n*#PREGUNTA-NUEVA# {pregunta} *\n*#RESPUESTA-NUEVA# {respuesta} *\n*#CATEGORÍA-NUEVA# {categoría} *\n*#SUB-CATEGORÍA-NUEVA# {sub-categoría}*\nCon este comando puedes actualizar el contenido que desees!\n\n
     *Eliminar {pregunta}*\nSi una pregunta ya no sirve, eliminala!\n
     *Ping*\npong 🏓"
     client.say(text: text, channel: data.channel)
